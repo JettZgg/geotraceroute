@@ -1,0 +1,110 @@
+# Python bytecode / cache / packages
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.env/
+.venv/
+pythonenv*/ 
+
+# IDE settings and temporary files
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
+.ropeproject
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+*.mmdb
+*.db
+dump.rdb
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.coverage.*
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+coverage.html
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Project specific
+data/GeoLite2-*.mmdb
+src/
+.ipynb_checkpoints/
+instance/
+.webassets-cache
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Generated documentation
+docs/_build/
+doc/_build/
+site/
+
+# Temporary artifacts
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*.orig
+*~
+
+geotraceroute.egg-info/ 
+
