@@ -256,23 +256,23 @@ async function startTraceroute() {
     hasReceivedValidHop = false;
 
     // Add initial message
-    addResultLine(`正在执行到 ${target} 的路径跟踪...`);
+    addResultLine(`Tracing route to ${target}...`);
 
     let apiKey = localStorage.getItem('ipinfo_api_key') || '';
 
     try {
-        // 构建 URL，包含客户端位置信息
+        // Build URL, including client location information
         let url = `/api/traceroute/start`;
         const params = new URLSearchParams();
 
-        // 添加目标和API密钥
+        // Add target and API key
         params.append('target', target);
 
         if (apiKey) {
             params.append('api_key', apiKey);
         }
 
-        // 添加客户端位置信息（如果可用）
+        // Add client location information (if available)
         if (clientLocation) {
             params.append('client_lat', clientLocation.latitude);
             params.append('client_lon', clientLocation.longitude);
@@ -292,13 +292,13 @@ async function startTraceroute() {
             include_reputation: showReputationScores
         };
 
-        console.log("发送跟踪请求:", {
+        console.log("Sending traceroute request:", {
             url: url,
             params: Object.fromEntries(params.entries()),
             body: requestBody
         });
 
-        // 发送 POST 请求
+        // Send POST request
         const response = await fetch(`${url}?${params.toString()}`, {
             method: 'POST',
             headers: {
@@ -316,9 +316,9 @@ async function startTraceroute() {
 
         // If no valid data was received, show error
         if (!success) {
-            // 检查是否有hops数据，如果有，则不显示错误信息
+            // Check if there's hops data, if so, don't show error message
             if (hops.length > 0) {
-                addResultLine("跟踪路由完成。", "info");
+                addResultLine("Tracking route completed.", "info");
             } else {
                 addResultLine("Traceroute completed, but no data was received. The server may be experiencing issues or the target may not be reachable.", "error");
             }
@@ -343,20 +343,20 @@ async function startTraceroute() {
 
 // Log debug message (only to console, not to UI)
 function logDebugMessage(msg) {
-    // 只输出到控制台，不再显示在 UI 中
+    // Only output to console, not to UI
     console.log('[Debug]', msg);
 }
 
-// JSON 解析助手函数 - 尝试修复格式不正确的JSON
+// JSON parsing helper function - attempt to fix malformed JSON
 function tryFixAndParseJSON(jsonStr) {
     try {
         return JSON.parse(jsonStr);
     } catch (e) {
         console.warn('Failed to parse JSON, attempting to fix...', jsonStr);
 
-        // 尝试修复一些常见的JSON问题
+        // Try to fix some common JSON issues
         try {
-            // 替换单引号为双引号
+            // Replace single quotes with double quotes
             const fixed = jsonStr.replace(/'/g, '"');
             return JSON.parse(fixed);
         } catch (e2) {
@@ -407,9 +407,9 @@ async function processStream(response) {
                 // Final update to 100%
                 if (progressBar) {
                     progressBar.style.width = "100%";
-                    // 移除动画效果和蓝色样式
+                    // Remove animation effect and blue style
                     progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped', 'bg-primary');
-                    // 添加绿色样式
+                    // Add green style
                     progressBar.classList.add('bg-success');
                 }
                 break;
@@ -419,7 +419,7 @@ async function processStream(response) {
             const chunk = decoder.decode(value, { stream: true });
             console.log("Received chunk:", chunk);
             if (chunk.includes('data:')) {
-                logDebugMessage(`收到数据块`);
+                logDebugMessage(`Received data chunk`);
             }
             buffer += chunk;
 
@@ -428,7 +428,7 @@ async function processStream(response) {
             buffer = eventsToProcess.pop() || ''; // Keep the last incomplete event in the buffer
 
             if (eventsToProcess.length > 0) {
-                logDebugMessage(`处理 ${eventsToProcess.length} 个事件`);
+                logDebugMessage(`Processing ${eventsToProcess.length} events`);
             }
 
             for (const event of eventsToProcess) {
@@ -442,14 +442,14 @@ async function processStream(response) {
 
                         // Check if this is the completion message
                         if (hop && (hop.status === 'completed' || hop.done === true)) {
-                            logDebugMessage('Traceroute 完成');
+                            logDebugMessage('Traceroute completed');
                             continue;
                         }
 
-                        // 确保hop有必要的字段
+                        // Make sure hop has necessary fields
                         if (hop && hop.hop_number !== undefined) {
-                            hasReceivedValidHop = true; // 标记收到有效数据
-                            logDebugMessage(`处理跳点 #${hop.hop_number}: IP=${hop.ip || '*'}`);
+                            hasReceivedValidHop = true; // Mark valid data received
+                            logDebugMessage(`Processing hop #${hop.hop_number}: IP=${hop.ip || '*'}`);
 
                             // Process the hop and update variables
                             const result = processSingleHop(hop, hops, latencies);
@@ -463,20 +463,20 @@ async function processStream(response) {
                             // Update stats
                             updateStats(hopCount, latencies);
                         } else if (hop) {
-                            logDebugMessage(`收到无效跳点数据: ${JSON.stringify(hop)}`);
+                            logDebugMessage(`Received invalid hop data: ${JSON.stringify(hop)}`);
                             console.warn('Received hop data without hop_number:', hop);
                         } else {
-                            logDebugMessage(`解析JSON失败`);
+                            logDebugMessage(`Failed to parse JSON`);
                         }
                     } catch (e) {
                         console.error('Error parsing JSON:', e, 'Data:', jsonData);
-                        logDebugMessage(`处理事件出错: ${e.message}`);
+                        logDebugMessage(`Processing event error: ${e.message}`);
                     }
                 }
             }
         }
 
-        // 更新结果标题中的跳点数量
+        // Update the hop count in the results header
         const resultsHeader = document.querySelector('.d-flex .badge');
         if (resultsHeader) {
             resultsHeader.textContent = `${hops.length} hops`;
@@ -484,7 +484,7 @@ async function processStream(response) {
             resultsHeader.classList.add('bg-success');
         }
 
-        // 确保进度条显示完成且变为绿色
+        // Ensure the progress bar shows completion and turns green
         if (progressBar) {
             progressBar.style.width = "100%";
             progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped', 'bg-primary');
@@ -493,7 +493,7 @@ async function processStream(response) {
 
     } catch (e) {
         console.error("Stream processing error:", e);
-        logDebugMessage(`流处理错误: ${e.message}`);
+        logDebugMessage(`Stream processing error: ${e.message}`);
     }
 
     // Ensure hopCount is defined and has a safe default
@@ -503,16 +503,16 @@ async function processStream(response) {
     // Final stats update
     updateStats(hopCount, latencies);
 
-    // 检查是否已经有处理过的跳点数据
-    logDebugMessage(`流处理完成，是否收到有效跳点数据: ${hasReceivedValidHop ? "是" : "否"}`);
+    // Check if we've processed any hop data
+    logDebugMessage(`Stream processing complete, valid hop data received: ${hasReceivedValidHop ? "yes" : "no"}`);
 
-    // 如果hops数组中有数据，即使hasReceivedValidHop为false，也认为接收到了有效数据
+    // If there's data in the hops array, consider it a success even if hasReceivedValidHop is false
     if (!hasReceivedValidHop && hops.length > 0) {
-        logDebugMessage(`虽然标记为未收到有效跳点，但hops数组中有${hops.length}条数据，视为成功`);
+        logDebugMessage(`Although marked as no valid hops received, the hops array contains ${hops.length} entries, considering as success`);
         hasReceivedValidHop = true;
     }
 
-    // 最终更新一次结果标题中的跳点数量
+    // Final update of the hop count in the results header
     const resultsHeader = document.querySelector('.d-flex .badge');
     if (resultsHeader) {
         resultsHeader.textContent = `${hops.length} hops`;
@@ -580,17 +580,17 @@ function processSingleHop(hop, hops, latencies) {
 function formatHopResult(hop) {
     if (!hop) return "Error: Invalid hop data";
 
-    // 基本的无法解析的hop数据情况
+    // If only a basic invalid hop data situation
     if (typeof hop === 'string') {
         return `Raw data: ${hop}`;
     }
 
-    // 错误消息处理
+    // Error message handling
     if (hop.error) {
         return `Error: ${hop.error}`;
     }
 
-    // 完成/完毕消息处理
+    // Completion/done message handling
     if (hop.status === 'completed' || hop.done === true) {
         return "Traceroute completed.";
     }
@@ -626,10 +626,10 @@ function formatHopResult(hop) {
         reputationStr = `Safety: ${(hop.reputation_score * 100).toFixed(0)}/100`;
     }
 
-    // 使用模板字符串创建更美观的结果
+    // Use template string to create more beautiful result
     let result = `<span class="hop-number">${number}.</span> `;
 
-    // IP 地址部分，使用固定宽度字体
+    // IP address part, using fixed width font
     if (ip === '*') {
         result += `<span class="hop-timeout">* * *</span>`;
     } else {
@@ -637,12 +637,12 @@ function formatHopResult(hop) {
         if (host) result += ` <span class="hop-host">(${host})</span>`;
     }
 
-    // RTT 值部分
+    // RTT value part
     if (rttStr !== '*') {
         result += ` <span class="hop-rtt">${rttStr} ms</span>`;
     }
 
-    // 位置信息和组织部分
+    // Location information and organization part
     if (locationStr) {
         result += ` <span class="hop-location"><i class="fas fa-map-marker-alt"></i> ${locationStr}</span>`;
     }
@@ -651,14 +651,14 @@ function formatHopResult(hop) {
         result += ` <span class="hop-org"><i class="fas fa-building"></i> ${orgStr}</span>`;
     }
 
-    // 信誉分数部分
+    // Reputation score part
     if (reputationStr) {
         result += ` <span class="hop-reputation">${reputationStr}</span>`;
     }
 
-    // 如果是空结果，至少显示跳点号
+    // If empty result, at least show hop number
     if (result === `<span class="hop-number">${number}.</span> <span class="hop-timeout">* * *</span>`) {
-        result = `<span class="hop-number">${number}.</span> <span class="hop-timeout">无响应</span>`;
+        result = `<span class="hop-number">${number}.</span> <span class="hop-timeout">No response</span>`;
     }
 
     return result;
@@ -770,13 +770,13 @@ function updateStats(hopCount, latencies) {
 function addResultLine(text, type = 'info') {
     if (!resultList) return;
 
-    // 确保结果容器显示
+    // Ensure results container is displayed
     if (resultsContainer) resultsContainer.style.display = 'block';
 
     const resultItem = document.createElement('div');
     resultItem.className = `result-item ${type}`;
 
-    // 使用 innerHTML 来支持格式化的 HTML 内容
+    // Use innerHTML to support formatted HTML content
     resultItem.innerHTML = text;
 
     resultList.appendChild(resultItem);
@@ -838,7 +838,7 @@ function clearResults() {
     if (progressBarContainer) progressBarContainer.style.display = 'none';
     if (progressBar) {
         progressBar.style.width = '0%';
-        // 恢复动画效果和蓝色样式
+        // Restore animation effect and blue style
         progressBar.classList.remove('bg-success');
         progressBar.classList.add('progress-bar-striped', 'progress-bar-animated', 'bg-primary');
     }
@@ -860,7 +860,7 @@ function processEvent(data) {
     try {
         const result = JSON.parse(data);
 
-        // 检查是否是完成消息
+        // Check if this is a completion message
         if (result.done === true) {
             console.log("Traceroute completed (done flag received)");
             clearInterval(progressInterval);
@@ -868,22 +868,22 @@ function processEvent(data) {
             stopButton.style.display = "none";
             startButton.disabled = false;
             spinner.style.display = "none";
-            addResultLine("路由跟踪完成！");
+            addResultLine("Traceroute completed!");
             return;
         }
 
-        // 检查是否是状态消息
+        // Check if this is a status message
         if (result.status === "completed") {
             console.log("Traceroute completed (status message received)");
-            // 继续处理，但我们知道接近完成
-            addResultLine("路由跟踪数据收集完成，正在最终处理...");
+            // Continue processing, but we know it's almost done
+            addResultLine("Traceroute data collection complete, finalizing...");
             return;
         }
 
-        // 检查是否是错误消息
+        // Check if this is an error message
         if (result.error) {
             console.error("Error in traceroute:", result.error);
-            addResultLine(`错误: ${result.error}`);
+            addResultLine(`Error: ${result.error}`);
             clearInterval(progressInterval);
             updateProgress(100);
             stopButton.style.display = "none";
@@ -892,15 +892,15 @@ function processEvent(data) {
             return;
         }
 
-        // 处理常规跳点数据
+        // Process regular hop data
         processHopData(result);
     } catch (e) {
         console.error("Error parsing event data:", e, "Raw data:", data);
-        addResultLine(`解析数据错误: ${e.message}`);
+        addResultLine(`Error parsing data: ${e.message}`);
     }
 }
 
-// 添加新的函数用于处理跳点数据
+// Add new function for processing hop data
 function processHopData(hopData) {
     if (!hopData || !hopData.hop) {
         console.log("Invalid hop data received:", hopData);
@@ -909,16 +909,16 @@ function processHopData(hopData) {
 
     console.log(`Processing hop #${hopData.hop}:`, hopData);
 
-    // 更新总跳数计数器（用于进度条）
+    // Update total hop count counter (for progress bar)
     if (hopData.hop > hopCount) {
         hopCount = hopData.hop;
     }
 
-    // 添加到结果列表
+    // Add to results list
     const formattedResult = formatHopResult(hopData);
     addResultLine(formattedResult);
 
-    // 如果有坐标信息，添加到地图上
+    // If there's coordinate information, add to map
     if (hopData.coordinates && hopData.coordinates.length === 2) {
         addMapMarker(hopData);
     }
@@ -933,18 +933,18 @@ function initGeolocation() {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude
                 };
-                console.log("用户位置已获取:", clientLocation);
+                console.log("User location acquired:", clientLocation);
 
-                // 尝试通过反向地理编码获取城市和国家信息
+                // Try to get city and country through reverse geocoding
                 try {
                     reverseGeocode(clientLocation.latitude, clientLocation.longitude);
                 } catch (e) {
-                    console.warn("反向地理编码失败:", e);
+                    console.warn("Reverse geocoding failed:", e);
                 }
             },
             (error) => {
-                console.warn("获取位置失败:", error.message);
-                // 使用 IP 地理位置作为备用
+                console.warn("Failed to get location:", error.message);
+                // Use IP-based geolocation as backup
                 fetchIpBasedLocation();
             },
             {
@@ -954,13 +954,13 @@ function initGeolocation() {
             }
         );
     } else {
-        console.warn("浏览器不支持地理位置");
-        // 使用 IP 地理位置作为备用
+        console.warn("Browser does not support geolocation");
+        // Use IP-based geolocation as backup
         fetchIpBasedLocation();
     }
 }
 
-// 通过 IP 获取粗略位置
+// Get approximate location via IP
 function fetchIpBasedLocation() {
     fetch('https://ipapi.co/json/')
         .then(response => response.json())
@@ -971,14 +971,14 @@ function fetchIpBasedLocation() {
                 city: data.city,
                 country: data.country_name
             };
-            console.log("IP 位置已获取:", clientLocation);
+            console.log("IP location acquired:", clientLocation);
         })
         .catch(error => {
-            console.error("获取 IP 位置失败:", error);
+            console.error("Failed to get IP location:", error);
         });
 }
 
-// 反向地理编码
+// Reverse geocoding
 function reverseGeocode(lat, lon) {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
 
@@ -992,10 +992,10 @@ function reverseGeocode(lat, lon) {
             if (data && data.address) {
                 clientLocation.city = data.address.city || data.address.town || data.address.village;
                 clientLocation.country = data.address.country;
-                console.log("位置详情已获取:", clientLocation);
+                console.log("Location details acquired:", clientLocation);
             }
         })
         .catch(error => {
-            console.error("反向地理编码失败:", error);
+            console.error("Reverse geocoding failed:", error);
         });
 }
